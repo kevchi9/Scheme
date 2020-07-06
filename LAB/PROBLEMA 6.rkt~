@@ -1,0 +1,31 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-intermediate-lambda-reader.ss" "lang")((modname |Piastrelle tiles|) (read-case-sensitive #t) (teachpacks ((lib "drawings.rkt" "installed-teachpacks"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "drawings.rkt" "installed-teachpacks")) #f)))
+(define figura
+  (lambda (p)
+    (cond ((= p 1) L-tile)
+     (else (glue-tiles (glue-tiles (figura (/ p 2)) (shift-down (quarter-turn-left (figura (/ p 2))) (* (/ p 2) 1)))
+                       (glue-tiles (shift-right (shift-down (figura (/ p 2)) (* (/ p 2) 0.5)) (* (/ p 2) 0.5))
+                                   (shift-right (quarter-turn-right (figura (/ p 2))) (* (/ p 2) 1)))))
+     )
+    )
+  )
+       
+  
+
+
+        
+(define space
+  (lambda (p)
+    (let ((L (glue-tiles (glue-tiles L-tile (shift-down (quarter-turn-left L-tile) 1))
+                 (glue-tiles (shift-right (shift-down L-tile 0.5) 0.5)
+                             (shift-right (quarter-turn-right L-tile) 1)))))
+      (glue-tiles (glue-tiles L (shift-down (quarter-turn-left L) (* 1 p)))
+                 (glue-tiles (shift-right (shift-down L (* 0.5 p)) (* 0.5 p))
+                             (shift-right (quarter-turn-right L) (* 1 p)))))
+      )
+    )
+  
+      
+        
+        

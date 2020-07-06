@@ -1,0 +1,181 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-intermediate-lambda-reader.ss" "lang")((modname |esercizio 3|) (read-case-sensitive #t) (teachpacks ((lib "drawings.rkt" "installed-teachpacks"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "drawings.rkt" "installed-teachpacks")) #f)))
+(define integer
+  (lambda (s)
+    (if (= (string-length s) 0)
+        ""
+        (if (or (char=? (string-ref s 0) #\-) (char=? (string-ref s 0) #\+))
+            (integer (substring s 1))
+            (if (char=? (string-ref s 0) #\.)
+                ""
+                (string-append (string(string-ref s 0)) (integer (substring s 1)))
+                ))
+        )
+        )
+    )
+(define fract-string
+  (lambda (s)
+    (if (= (string-length s) 0)
+        ""
+        (if (or (char=? (string-ref s 0) #\-) (char=? (string-ref s 0) #\+))
+            (fract-string (substring s 1))
+            (if (= (string-length s) 0)
+                ""
+                (if (char=? (string-ref s 0) #\.)
+                    (substring s 1)
+                    (fract-string (substring s 1))
+                    )))
+        )
+        ))
+(define b-r-n1
+  (lambda (s)
+    (b-r-n (integer s))
+    ))
+(define b-r-n
+  (lambda (s)
+    (if (char=? (string-ref s 0) #\.)
+        0
+        (if (= (string-length s) 1)
+            (if (char=? (string-ref s (- (string-length s)1)) #\1)
+                (+ 1)
+                0)
+            (if (char=? (string-ref s (- (string-length s)1)) #\1)
+                (+ (* 2 (b-r-n (substring s 0 (- (string-length s ) 1)))) 1)
+                (* 2 (b-r-n (substring s 0 (- (string-length s ) 1))))
+                )))
+  ))
+(define calculate-fract
+  (lambda (s)
+    (if (= (string-length s) 0)
+        0
+        (if (= (string-length s) 1)
+            (if (char=? (string-ref s 0) #\1)
+                (/ 2)
+                0)
+            (if (char=? (string-ref s 0) #\1)
+                (+ (/ (calculate-fract (substring s 1)) 2) (/ 1 2))
+                (/ (calculate-fract (substring s 1)) 2)
+                )
+            )
+        ))
+    )
+(define fract
+  (lambda (s)
+    (calculate-fract (fract-string s))
+    ))
+
+(define bin-rep->number0
+  (lambda (s)
+    (+ (b-r-n1 s) (fract s))
+    )
+  )
+(define bin-rep->number
+  (lambda (s)
+    (if (char=? (string-ref s 0) #\-)
+        (- (bin-rep->number0 s))
+        (bin-rep->number0 s))
+    )
+  )
+;------------------------------------------------------------------------------
+(define base
+  (lambda (b)
+    (string-length b)
+    ))
+(define last-value
+  (lambda (s)
+    (- (base s) 1)
+    )
+  )
+(define value
+  (lambda (b v)
+    (if (= (string-length v) 0)
+        0
+        (if (= (string-length b) 0)
+            0
+            (if (string=? (substring b 0 1) v)
+                (+ 0)
+                (+ (value (substring b 1) v) 1)
+                )))))
+(define rep->number0
+  (lambda (b s)
+    (if (= (string-length s) 1)
+        (if (char=? (string-ref s (- (string-length s) 1)) (string-ref b 0))
+            0
+            (+ (value b (substring s 0 1)))
+            )
+        (if (char=? (string-ref s (- (string-length s) 1)) (string-ref b 0)) ;se il primo carattere è lo zero della base
+            (* (base b) (rep->number0 b (substring s 0 (- (string-length s)1))))
+            (+ (* (base b) (rep->number0 b (substring s 0 (- (string-length s)1))))
+               (value b (substring s (- (string-length s) 1) (string-length s))))
+            )
+        ))
+    )
+(define segno
+  (lambda (b s) 
+    (cond ((char=? (string-ref s 0) #\-)
+        (- (rep->number0 b (substring s 1)))) 
+          ((char=? (string-ref s 0) #\+)
+           (rep->number0 b (substring s 1)))
+          (else (rep->number0 b s)))
+    ))
+(define integer-string
+  (lambda (s)
+    (if (= (string-length s) 0)
+        ""
+        (if (or (char=? (string-ref s 0) #\-) (char=? (string-ref s 0) #\+))
+            (integer-string (substring s 1))
+            (if (char=? (string-ref s 0) #\.)
+                ""
+                (string-append (substring s 0 1) (integer-string (substring s 1))))
+            )
+            )
+        )
+    )
+(define rep->number1
+  (lambda (b s)
+    (rep->number0 b (integer-string s))
+    )
+  )
+
+(define fract-string1
+  (lambda (s)
+    (if (= (string-length s) 0)
+        ""
+        (if (char=? (string-ref s 0) #\.)
+            (substring s 1)
+            (fract-string1 (substring s 1)))
+        )
+    )
+  )
+(define fract1 ;funziona solo con fract-string in input
+  (lambda (b s)
+    (if (= (string-length s) 0)
+        0
+        (if (= (string-length s) 1)
+            (if (char=? (string-ref s 0) (string-ref b 0))
+                0
+                (/ (value b (substring s 0 1)) (base b)))
+            (if (char=? (string-ref s 0) (string-ref b 0))
+                (+ (/ (fract1 b (substring s 1)) (base b))
+                   (/ (- (char->integer (string-ref s 0)) 48)(base b)))
+                (/ (fract1 b (substring s 1)) (base b))
+                )
+            ))
+        )
+    )
+(define FRACT
+  (lambda (b s) 
+    (fract1 b (fract-string s))
+    ))
+
+(define rep->number
+  (lambda (b s)
+    (cond ((char=? (string-ref s 0) #\-)
+           (- (+ (rep->number1 b s) (FRACT b s))))
+          (else
+           (+ (rep->number1 b s) (FRACT b s)))
+    )
+  )
+  )
+(rep->number "0123456789ABDEF" "1CF.0")

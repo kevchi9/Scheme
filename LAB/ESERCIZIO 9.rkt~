@@ -1,0 +1,40 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-intermediate-lambda-reader.ss" "lang")((modname |ESERCIZIO 9|) (read-case-sensitive #t) (teachpacks ((lib "drawings.rkt" "installed-teachpacks") (lib "hanoi.rkt" "installed-teachpacks"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "drawings.rkt" "installed-teachpacks") (lib "hanoi.rkt" "installed-teachpacks")) #f)))
+(define cript   ;alfabeto criptato 
+  (lambda (s)   
+    (lambda (k) ;intero compreso da 0 a 19
+      (string-append (substring s k) (substring s 0 k))
+      ))
+  )
+(define f (cript "ABCDEFGHILMNOPQRSTVX"))
+;mi da la posizione del carattere rispetto all'alfabeto originale 
+(define get-position     
+    (lambda (char alfabeto)
+      (if (char=? char (string-ref alfabeto 0))
+          (+ 1)
+          (+ 1 (get-position char (substring alfabeto 1)
+                         ))
+          ) 
+      ))
+  ;mi da il carattere nel secondo alfabeto
+  ;rispetto alla sua posizione nel primo alfabeto
+(define find-cripted  
+  (lambda (char k)
+    (substring (f k) (- (get-position char (f 0)) 1) (get-position char (f 0)))
+    )
+  )
+(define cript2
+  (lambda (k s)
+    (if (= (string-length s) 0)
+        ""
+        (if (string=? (substring s 0 1) " " ) ;SPAZIO
+            (cript2 k (substring s 1))
+            (if (= (string-length s) 1)
+                (find-cripted (string-ref s 0) k)
+                (string-append (find-cripted (string-ref s 0) k ) (cript2 k (substring s 1))
+                               )
+                ))
+        )
+    )
+  ) 
